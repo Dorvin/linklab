@@ -58,9 +58,19 @@ void fini(void)
   // ...
   unsigned long alloc_count;
   unsigned long alloc_avg;
+  item *cur;
+
   alloc_count = n_malloc + n_calloc + n_realloc;
   alloc_avg = n_allocb/alloc_count;
   LOG_STATISTICS(n_allocb, alloc_avg, n_freeb);
+  LOG_NONFREED_START();
+  cur = list;
+  while (cur != NULL) {
+    if(cur->cnt > 0){
+      LOG_BLOCK(cur->ptr, cur->size, cur->cnt, cur->fname, cur->ofs);
+    }
+    cur = cur->next;
+  }
 
   LOG_STOP();
 
@@ -76,6 +86,7 @@ void *malloc(size_t size)
   LOG_MALLOC(size, res);
   n_malloc++;
   n_allocb += size;
+  alloc(list, res, size);
   return res;
 }
 
@@ -86,6 +97,7 @@ void *calloc(size_t nmemb, size_t size)
   LOG_CALLOC(nmemb, size, res);
   n_calloc++;
   n_allocb += nmemb*size;
+  alloc(list, res, nmemb*size);
   return res;
 }
 
@@ -96,6 +108,10 @@ void *realloc(void *ptr, size_t size)
   LOG_REALLOC(ptr, size, res);
   n_realloc++;
   n_allocb += size;
+  item *ptr_item = find(list, ptr);
+  n_freeb += ptr_item->size;
+  dealloc(list, ptr);
+  alloc(list, res, size);
   return res;
 }
 
@@ -106,5 +122,8 @@ void free(void *ptr)
   }
   freep = dlsym(RTLD_NEXT, "free");
   freep(ptr);
+  item *ptr_item = find(list, ptr);
+  n_freeb += ptr_item->size;
+  dealloc(list, ptr);
   LOG_FREE(ptr);
 }
