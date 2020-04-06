@@ -56,8 +56,11 @@ __attribute__((destructor))
 void fini(void)
 {
   // ...
-
-  LOG_STATISTICS(0L, 0L, 0L);
+  unsigned long alloc_count;
+  unsigned long alloc_avg;
+  alloc_count = n_malloc + n_calloc + n_realloc;
+  alloc_avg = n_allocb/alloc_count;
+  LOG_STATISTICS(n_allocb, alloc_avg, n_freeb);
 
   LOG_STOP();
 
@@ -66,3 +69,42 @@ void fini(void)
 }
 
 // ...
+void *malloc(size_t size)
+{
+  mallocp = dlsym(RTLD_NEXT, "malloc");
+  char *res = mallocp(size);
+  LOG_MALLOC(size, res);
+  n_malloc++;
+  n_allocb += size;
+  return res;
+}
+
+void *calloc(size_t nmemb, size_t size)
+{
+  callocp = dlsym(RTLD_NEXT, "calloc");
+  char *res = callocp(nmemb, size);
+  LOG_CALLOC(nmemb, size, res);
+  n_calloc++;
+  n_allocb += nmemb*size;
+  return res;
+}
+
+void *realloc(void *ptr, size_t size)
+{
+  reallocp = dlsym(RTLD_NEXT, "realloc");
+  char *res = reallocp(ptr, size);
+  LOG_REALLOC(ptr, size, res);
+  n_realloc++;
+  n_allocb += size;
+  return res;
+}
+
+void free(void *ptr)
+{
+  if(!ptr){
+    return;
+  }
+  freep = dlsym(RTLD_NEXT, "free");
+  freep(ptr);
+  LOG_FREE(ptr);
+}
