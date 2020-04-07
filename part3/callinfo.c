@@ -1,3 +1,5 @@
+#define UNW_LOCAL_ONLY
+
 #include <stdlib.h>
 #include <libunwind.h>
 
@@ -19,7 +21,7 @@ int get_callinfo(char *fname, size_t fnlen, unsigned long long *ofs)
     //printf("0x%lx:", pc);
     if (unw_get_proc_name(&cursor, fname, fnlen, &offset) == 0) {
       if(fname[0] == 'm' && fname[1] == 'a' && fname[2] == 'i' && fname[3] == 'n'){
-        *ofs = (unsigned long long)offset;
+        *ofs = (unsigned long long)offset - 5;
         return (int)pc;
       }
       //printf(" (%s+0x%lx)\n", sym, offset);
