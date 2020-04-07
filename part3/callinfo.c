@@ -7,7 +7,6 @@ int get_callinfo(char *fname, size_t fnlen, unsigned long long *ofs)
   unw_context_t context;
   unw_word_t offset;
   unw_word_t pc;
-  int count = 0;
   if (unw_getcontext(&context))
     return;
   if (unw_init_local(&cursor, &context))
@@ -19,8 +18,7 @@ int get_callinfo(char *fname, size_t fnlen, unsigned long long *ofs)
     }
     //printf("0x%lx:", pc);
     if (unw_get_proc_name(&cursor, fname, fnlen, &ofs) == 0) {
-      count++;
-      if(count == 3)
+      if(fname[0] == 'm' && fname[1] == 'a' && fname[2] == 'i' && fname[3] == 'n');
         return pc;
       //printf(" (%s+0x%lx)\n", sym, offset);
     } else {
