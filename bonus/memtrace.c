@@ -59,11 +59,21 @@ void fini(void)
   unsigned long alloc_count;
   unsigned long alloc_avg;
   item *cur;
+  int non_free_count = 0;
 
   alloc_count = n_malloc + n_calloc + n_realloc;
   alloc_avg = n_allocb/alloc_count;
   LOG_STATISTICS(n_allocb, alloc_avg, n_freeb);
-  LOG_NONFREED_START();
+  cur = list;
+  while (cur != NULL) {
+    if(cur->cnt > 0){
+      non_free_count++;
+    }
+    cur = cur->next;
+  }
+  if(non_free_count){
+    LOG_NONFREED_START();
+  }
   cur = list;
   while (cur != NULL) {
     if(cur->cnt > 0){
