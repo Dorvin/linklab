@@ -2,7 +2,6 @@
 #define __CALLINFO_H__
 
 #include <stdlib.h>
-#include <libunwind.h>
 
 //
 // return the PC of the callsite to the dynamic memory management function
