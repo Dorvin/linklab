@@ -133,6 +133,7 @@ void free(void *ptr)
     return;
   }
   freep = dlsym(RTLD_NEXT, "free");
+  LOG_FREE(ptr);
   item *ptr_item = find(list, ptr);
   if(ptr_item == NULL){
     LOG_ILL_FREE();
@@ -144,5 +145,4 @@ void free(void *ptr)
   freep(ptr);
   n_freeb += ptr_item->size;
   dealloc(list, ptr);
-  LOG_FREE(ptr);
 }
